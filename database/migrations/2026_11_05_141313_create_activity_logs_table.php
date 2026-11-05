@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('activity_logs', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('action'); // created, updated, completed, uploaded
+            $table->morphs('subject'); // subject_type + subject_id (task, note, dokumen, dll.)
+            $table->string('description')->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'created_at']);
         });
     }
 

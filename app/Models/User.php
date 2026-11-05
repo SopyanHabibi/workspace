@@ -34,6 +34,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    public function workspaces() { return $this->hasMany(Workspace::class); }
+    public function activityLogs() { return $this->hasMany(ActivityLog::class); }
     /**
      * Get the attributes that should be cast.
      *
