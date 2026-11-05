@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use App\Models\Workspace;
 
 /**
  * @property int $id
@@ -36,6 +37,16 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 
     public function workspaces() { return $this->hasMany(Workspace::class); }
     public function activityLogs() { return $this->hasMany(ActivityLog::class); }
+
+    public function defaultWorkspace(): Workspace{
+        return $this->workspaces()->firstOnCreate([
+            'name' => 'My Workspace'
+        ]);
+    }
+
+
+
+
     /**
      * Get the attributes that should be cast.
      *
