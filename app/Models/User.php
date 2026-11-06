@@ -38,11 +38,10 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function workspaces() { return $this->hasMany(Workspace::class); }
     public function activityLogs() { return $this->hasMany(ActivityLog::class); }
 
-    public function defaultWorkspace(): Workspace{
-        return $this->workspaces()->firstOnCreate([
-            'name' => 'My Workspace'
-        ]);
-    }
+    public function defaultWorkspace(): Workspace
+{
+    return $this->workspaces()->firstOrCreate(['name' => 'My Workspace']);
+}
 
 
 
