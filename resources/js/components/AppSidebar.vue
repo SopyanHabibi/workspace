@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid, FolderKanban } from '@lucide/vue';
+import { BookOpen, FolderGit2, LayoutGrid, FolderKanban, ListTodo } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -24,6 +24,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     { title: 'Projects', href: '/projects', icon: FolderKanban },
+    { title: 'Semua Tugas', href: '/tasks', icon: ListTodo },
 ];
 
 const footerNavItems: NavItem[] = [
