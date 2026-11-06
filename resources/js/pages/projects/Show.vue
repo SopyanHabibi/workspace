@@ -18,6 +18,15 @@ interface Project {
     status: string;
     due_date: string | null;
     tasks: Task[];
+    notes: Note[];
+}
+
+interface Note {
+    id: number;
+    title: string;
+    content: string | null;
+    task_id: number | null;
+    created_at: string;
 }
 
 const props = defineProps<{ project: Project }>();
@@ -31,6 +40,25 @@ const importanceLabel: Record<number, string> = { 1: 'Rendah', 2: 'Sedang', 3: '
 const statusLabel: Record<Task['status'], string> = { todo: 'To do', in_progress: 'Dikerjakan', done: 'Selesai' };
 
 const form = useForm({ title: '', importance: 2, due_at: '' });
+
+const noteForm = useForm({ title: '', content: '', task_id: null as number | null });
+
+function addNote() {
+    noteForm.post(`/projects/${props.project.id}/notes`, {
+        preserveScroll: true,
+        onSuccess: () => noteForm.reset(),
+    });
+}
+
+function removeNote(note: Note) {
+    if (confirm(`Hapus catatan "${note.title}"?`)) {
+        router.delete(`/notes/${note.id}`, { preserveScroll: true });
+    }
+}
+
+function taskTitle(taskId: number | null): string | null {
+    return props.project.tasks.find((t) => t.id === taskId)?.title ?? null;
+}
 
 function addTask() {
     form.post(`/projects/${props.project.id}/tasks`, {
@@ -111,6 +139,37 @@ function formatDue(value: string | null): string {
                     </div>
                 </li>
             </ul>
+            <div class="space-y-3 border-t pt-6">
+    <h2 class="font-semibold">Catatan</h2>
+
+    <form @submit.prevent="addNote" class="space-y-3 rounded-lg border p-4">
+        <input v-model="noteForm.title" placeholder="Judul catatan" class="w-full rounded border bg-transparent px-3 py-2" />
+        <p v-if="noteForm.errors.title" class="text-sm text-red-500">{{ noteForm.errors.title }}</p>
+
+        <textarea v-model="noteForm.content" placeholder="Isi catatan (opsional)" rows="3" class="w-full rounded border bg-transparent px-3 py-2" />
+
+        <div class="flex items-center gap-3">
+            <select v-model="noteForm.task_id" class="rounded border bg-transparent px-3 py-2">
+                <option :value="null" class="text-black">Tidak terkait tugas</option>
+                <option v-for="t in project.tasks" :key="t.id" :value="t.id" class="text-black">{{ t.title }}</option>
+            </select>
+            <button :disabled="noteForm.processing" class="rounded bg-black px-4 py-2 text-white disabled:opacity-50 dark:bg-white dark:text-black">
+                Simpan
+            </button>
+        </div>
+    </form>
+
+    <p v-if="project.notes.length === 0" class="text-sm text-gray-500">Belum ada catatan.</p>
+
+    <div v-for="n in project.notes" :key="n.id" class="space-y-1 rounded-lg border p-3">
+        <div class="flex items-start justify-between gap-2">
+            <h3 class="font-medium">{{ n.title }}</h3>
+            <button @click="removeNote(n)" class="text-sm text-red-500 hover:underline">Hapus</button>
+        </div>
+        <p v-if="n.content" class="whitespace-pre-line text-sm text-gray-500">{{ n.content }}</p>
+        <p v-if="taskTitle(n.task_id)" class="text-xs text-gray-400">Terkait tugas: {{ taskTitle(n.task_id) }}</p>
+    </div>
+</div>
         </div>
     </AppLayout>
 </template>

@@ -37,13 +37,16 @@ class ProjectController extends Controller
     }
 
     public function show(Project $project)
-    {
-        Gate::authorize('view', $project);
+{
+    Gate::authorize('view', $project);
 
-        $project->load(['tasks' => fn ($q) => $q->orderBy('due_at')]);
+    $project->load([
+        'tasks' => fn ($q) => $q->orderBy('due_at'),
+        'notes' => fn ($q) => $q->latest(),
+    ]);
 
-        return Inertia::render('projects/Show', ['project' => $project]);
-    }
+    return Inertia::render('projects/Show', ['project' => $project]);
+}
 
     public function update(Request $request, Project $project)
     {
