@@ -44,6 +44,15 @@ class TaskController extends Controller
 
         $task->update($data);
 
+        if (isset($data['status']) && $data['status'] === 'done') {
+    $task->project->workspace->user->activityLogs()->create([
+        'action' => 'completed',
+        'subject_type' => \App\Models\Task::class,
+        'subject_id' => $task->id,
+        'description' => "Menyelesaikan tugas \"{$task->title}\"",
+    ]);
+}
+
         return back();
     }
 
