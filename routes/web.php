@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\NoteController;
 use Illuminate\Support\Facades\Route;
@@ -11,9 +12,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
     Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
