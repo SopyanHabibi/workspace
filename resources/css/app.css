@@ -2,6 +2,7 @@
 
 @source inline("{bg,text}-{red,orange,yellow,green}-{100,700} dark:{bg,text}-{red,orange,yellow,green}-{900,300}");
 @source inline("bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300");
+@source inline("bg-red-500/15 text-red-400 bg-orange-500/15 text-orange-400 bg-yellow-500/15 text-yellow-400 bg-green-500/15 text-green-400 bg-primary/15 text-primary");
 
 @import 'tw-animate-css';
 

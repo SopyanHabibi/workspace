@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -91,7 +91,7 @@ function formatDue(value: string | null): string {
 <template>
     <Head :title="project.name" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
+    
         <div class="mx-auto w-full max-w-4xl space-y-6 p-4">
             <div class="flex items-start justify-between gap-4">
                 <div>
@@ -171,5 +171,5 @@ function formatDue(value: string | null): string {
     </div>
 </div>
         </div>
-    </AppLayout>
+    
 </template>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 interface Project {
@@ -30,7 +29,7 @@ function progress(p: Project): number {
 <template>
     <Head title="Projects" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
+
         <div class="mx-auto w-full max-w-4xl space-y-6 p-4">
             <form @submit.prevent="submit" class="space-y-3 rounded-lg border p-4">
                 <h2 class="font-semibold">Proyek baru</h2>
@@ -72,5 +71,5 @@ function progress(p: Project): number {
                 </Link>
             </div>
         </div>
-    </AppLayout>
+    
 </template>

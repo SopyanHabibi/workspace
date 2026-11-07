@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
 interface TaskRow {
@@ -46,7 +45,6 @@ function filterBy(status: string | null) {
 <template>
     <Head title="Semua Tugas" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-full max-w-4xl space-y-4 p-4">
             <div class="flex flex-wrap items-center gap-2">
                 <button
@@ -77,5 +75,4 @@ function filterBy(status: string | null) {
                 </span>
             </Link>
         </div>
-    </AppLayout>
 </template>
