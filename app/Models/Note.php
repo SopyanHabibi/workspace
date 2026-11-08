@@ -9,7 +9,7 @@ class Note extends Model
 {
     /** @use HasFactory<\Database\Factories\NoteFactory> */
     use HasFactory;
-    protected $fillable = ['project_id', 'task_id', 'title', 'content'];
+    protected $fillable = ['project_id', 'task_id', 'title', 'type', 'content'];
 public function project() { return $this->belongsTo(Project::class); }
 public function task() { return $this->belongsTo(Task::class); }
 }
