@@ -44,6 +44,17 @@ class TaskController extends Controller
 
         $task->update($data);
 
+// Auto-update project status berdasarkan task
+$project = $task->project;
+$total = $project->tasks()->count();
+$done = $project->tasks()->where('status', 'done')->count();
+
+if ($total > 0 && $done === $total) {
+    $project->update(['status' => 'completed']);
+} elseif ($project->status === 'completed') {
+    $project->update(['status' => 'active']);
+}
+
         if (isset($data['status']) && $data['status'] === 'done') {
     $task->project->workspace->user->activityLogs()->create([
         'action' => 'completed',

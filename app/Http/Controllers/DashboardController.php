@@ -35,6 +35,7 @@ class DashboardController extends Controller
                 'project_name' => $task->project->name,
                 'importance' => $task->importance,
                 'due_at' => $task->due_at,
+                'priority_level' => TaskPriority::level($task),
             ]);
 
         $recentActivity = $workspace->user->activityLogs()
