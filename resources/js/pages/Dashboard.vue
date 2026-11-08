@@ -90,7 +90,7 @@ const levelLabel: Record<string, string> = {
 
 <template>
     <Head title="Dashboard" />
-    
+
         <div class="mx-auto w-full max-w-6xl space-y-6 p-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
