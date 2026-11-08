@@ -11,17 +11,36 @@ use Inertia\Inertia;
 class ProjectController extends Controller
 {
     public function index(Request $request)
-    {
-        $projects = $request->user()->defaultWorkspace()->projects()
-            ->withCount([
-                'tasks',
-                'tasks as done_tasks_count' => fn ($q) => $q->where('status', 'done'),
-            ])
-            ->latest()
-            ->get();
+{
+    $statusFilter = $request->string('status')->toString() ?: null;
 
-        return Inertia::render('projects/Index', ['projects' => $projects]);
-    }
+    $projects = $request->user()->defaultWorkspace()->projects()
+        ->withCount([
+            'tasks',
+            'tasks as done_tasks_count' => fn ($q) => $q->where('status', 'done'),
+            'tasks as in_progress_count' => fn ($q) => $q->where('status', 'in_progress'),
+        ])
+        ->when($statusFilter, fn ($q) => $q->where('status', $statusFilter))
+        ->latest()
+        ->get();
+
+    $allProjects = $request->user()->defaultWorkspace()->projects()
+        ->withCount([
+            'tasks',
+            'tasks as done_tasks_count' => fn ($q) => $q->where('status', 'done'),
+        ])
+        ->get();
+
+    return Inertia::render('projects/Index', [
+        'projects' => $projects,
+        'statusFilter' => $statusFilter,
+        'stats' => [
+            'total' => $allProjects->count(),
+            'in_progress' => $allProjects->where('status', 'active')->count(),
+            'completed' => $allProjects->where('status', 'completed')->count(),
+        ],
+    ]);
+}
 
     public function store(Request $request)
     {
