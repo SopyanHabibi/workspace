@@ -188,11 +188,12 @@ function submit() {
         </p>
 
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div
-                v-for="p in filtered"
-                :key="p.id"
-                class="group relative rounded-xl border bg-card p-5 space-y-4 hover:border-primary/50 transition-colors"
-            >
+            <Link
+    v-for="p in filtered"
+    :key="p.id"
+    :href="`/projects/${p.id}`"
+    class="group relative rounded-xl border bg-card p-5 space-y-4 hover:border-primary/50 transition-colors block"
+>
                 <!-- Top row -->
                 <div class="flex items-start justify-between">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15">
@@ -244,7 +245,7 @@ function submit() {
                         <ArrowUpRight class="h-4 w-4" />
                     </Link>
                 </div>
-            </div>
+            </Link>
         </div>
     </div>
 </template>
