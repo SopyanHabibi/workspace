@@ -6,9 +6,19 @@ use App\Models\Note;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 
 class NoteController extends Controller
 {
+    public function show(Note $note)
+    {
+        Gate::authorize('update', $note);
+
+        $note->load('task:id,title', 'project:id,name');
+
+        return Inertia::render('notes/Show', ['note' => $note]);
+    }
+
     public function store(Request $request, Project $project)
     {
         Gate::authorize('update', $project);
@@ -16,11 +26,11 @@ class NoteController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
+            'type' => ['required', 'in:personal,project,task'],
             'task_id' => ['nullable', 'exists:tasks,id'],
         ]);
 
-        // Pastikan task yang dipilih memang milik project ini
-        if (! empty($data['task_id']) && ! $project->tasks()->whereKey($data['task_id'])->exists()) {
+        if (!empty($data['task_id']) && !$project->tasks()->whereKey($data['task_id'])->exists()) {
             abort(422, 'Task tidak ditemukan di proyek ini.');
         }
 
@@ -36,14 +46,20 @@ class NoteController extends Controller
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
+            'type' => ['sometimes', 'in:personal,project,task'],
             'task_id' => ['nullable', 'exists:tasks,id'],
         ]);
 
-        if (! empty($data['task_id']) && ! $note->project->tasks()->whereKey($data['task_id'])->exists()) {
-            abort(422, 'Task tidak ditemukan di proyek ini.');
-        }
-
         $note->update($data);
+
+        return back();
+    }
+
+    public function pin(Note $note)
+    {
+        Gate::authorize('update', $note);
+
+        $note->update(['is_pinned' => !$note->is_pinned]);
 
         return back();
     }

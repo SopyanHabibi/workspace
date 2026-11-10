@@ -25,6 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
     Route::get('notes', [NoteListController::class, 'index'])->name('notes.index');
     Route::post('notes', [NoteListController::class, 'store'])->name('notes.store');
+    Route::get('notes/{note}', [NoteController::class, 'show'])->name('notes.show');
+    Route::patch('notes/{note}/pin', [NoteController::class, 'pin'])->name('notes.pin');
 });
 
 require __DIR__.'/settings.php';

@@ -27,12 +27,13 @@ class NoteListController extends Controller
                 'title' => $note->title,
                 'content' => $note->content,
                 'type' => $note->type,
+                'is_pinned' => $note->is_pinned,
                 'project_name' => $projectName,
                 'task_title' => $note->task?->title,
                 'updated_at' => $note->updated_at,
             ]))
             ->flatten(1)
-            ->sortByDesc('updated_at')
+            ->sort(fn ($a, $b) => $b['is_pinned'] <=> $a['is_pinned'] ?: $b['updated_at'] <=> $a['updated_at'])
             ->values();
 
         return Inertia::render('notes/Index', [

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { FolderKanban, NotebookPen, Plus, Search, X } from 'lucide-vue-next';
+import { FolderKanban, NotebookPen, Pencil, Pin, PinOff, Plus, Search, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface NoteItem {
@@ -8,6 +8,7 @@ interface NoteItem {
     title: string;
     content: string | null;
     type: 'personal' | 'project' | 'task';
+    is_pinned: boolean;
     project_name: string;
     task_title: string | null;
     updated_at: string;
@@ -195,40 +196,69 @@ function submit() {
         <!-- Grid -->
         <div class="grid gap-4 sm:grid-cols-2">
             <div
-                v-for="n in filtered"
-                :key="n.id"
-                class="rounded-xl border bg-card p-5 space-y-3 hover:border-primary/50 transition-colors cursor-pointer"
+    v-for="n in filtered"
+    :key="n.id"
+    class="group rounded-xl border bg-card p-5 space-y-3 hover:border-primary/50 transition-colors"
+>
+    <!-- Type badge + pin indicator -->
+    <div class="flex items-center justify-between">
+        <span
+            class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase"
+            :class="typeStyle[n.type]"
+        >
+            {{ typeLabel[n.type] }}
+        </span>
+        <Pin v-if="n.is_pinned" class="h-3.5 w-3.5 text-primary" />
+    </div>
+
+    <!-- Title & content -->
+    <div>
+        <h3 class="font-semibold">{{ n.title }}</h3>
+        <p v-if="n.content" class="mt-1 line-clamp-2 text-sm text-muted-foreground">
+            {{ n.content }}
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between pt-1 border-t border-border">
+        <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <FolderKanban v-if="n.type === 'project'" class="h-3.5 w-3.5" />
+            <NotebookPen v-else-if="n.type === 'task'" class="h-3.5 w-3.5" />
+            <span>
+                {{ n.type === 'task' && n.task_title ? n.task_title : n.project_name }}
+            </span>
+        </div>
+
+        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Link
+                :href="`/notes/${n.id}`"
+                class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                title="Edit"
             >
-                <!-- Type badge -->
-                <span
-                    class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase"
-                    :class="typeStyle[n.type]"
-                >
-                    {{ typeLabel[n.type] }}
-                </span>
+                <Pencil class="h-3.5 w-3.5" />
+            </Link>
+            <button
+                @click="router.patch(`/notes/${n.id}/pin`, {}, { preserveScroll: true })"
+                class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                :title="n.is_pinned ? 'Unpin' : 'Pin'"
+            >
+                <PinOff v-if="n.is_pinned" class="h-3.5 w-3.5" />
+                <Pin v-else class="h-3.5 w-3.5" />
+            </button>
+            <button
+                @click="router.delete(`/notes/${n.id}`, { preserveScroll: true })"
+                class="rounded-md p-1.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-400"
+                title="Delete"
+            >
+                <Trash2 class="h-3.5 w-3.5" />
+            </button>
+        </div>
 
-                <!-- Title & content -->
-                <div>
-                    <h3 class="font-semibold">{{ n.title }}</h3>
-                    <p v-if="n.content" class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                        {{ n.content }}
-                    </p>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex items-center justify-between pt-1 border-t border-border">
-                    <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <FolderKanban v-if="n.type === 'project'" class="h-3.5 w-3.5" />
-                        <NotebookPen v-else-if="n.type === 'task'" class="h-3.5 w-3.5" />
-                        <span>
-                            {{ n.type === 'task' && n.task_title ? n.task_title : n.project_name }}
-                        </span>
-                    </div>
-                    <span class="text-xs text-muted-foreground">
-                        {{ formatUpdated(n.updated_at) }}
-                    </span>
-                </div>
-            </div>
+        <span class="text-xs text-muted-foreground group-hover:hidden">
+            {{ formatUpdated(n.updated_at) }}
+        </span>
+    </div>
+</div>
         </div>
     </div>
 </template>
