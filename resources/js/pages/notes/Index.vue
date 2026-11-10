@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { FolderKanban, NotebookPen, Pencil, Pin, PinOff, Plus, Search, Trash2, X } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 interface NoteItem {
