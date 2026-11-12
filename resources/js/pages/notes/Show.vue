@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Pin, PinOff, Trash2 } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 import { ref } from 'vue';
 
 interface NoteDetail {
@@ -35,7 +36,12 @@ const typeLabel: Record<string, string> = {
 };
 
 function save() {
-    form.patch(`/notes/${props.note.id}`, { preserveScroll: true });
+    form.patch(`/notes/${props.note.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success('Note saved successfully.');
+        },
+    });
 }
 
 function togglePin() {
