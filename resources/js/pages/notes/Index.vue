@@ -15,11 +15,17 @@ interface NoteItem {
     updated_at: string;
 }
 
+interface ProjectOption {
+    id: number;
+    name: string;
+    tasks: { id: number; title: string }[];
+}
+
 const props = defineProps<{
     notes: NoteItem[];
     typeFilter: string | null;
+    projects: ProjectOption[];
 }>();
-
 const search = ref('');
 const showForm = ref(false);
 
@@ -30,6 +36,10 @@ const form = useForm({
     project_id: null as number | null,
     task_id: null as number | null,
 });
+
+const availableTasks = computed(() =>
+    props.projects.find((p) => p.id === form.project_id)?.tasks ?? [],
+);
 
 const tabs = [
     { label: 'All Notes', value: null },
@@ -135,6 +145,29 @@ function submit() {
                         <option value="task">Task Note</option>
                     </select>
                 </div>
+                <!-- Project selector (muncul kalau tipe project/task) -->
+<div v-if="form.type !== 'personal'" class="space-y-1">
+    <label class="text-xs text-muted-foreground">Project *</label>
+    <select
+        v-model="form.project_id"
+        class="w-full rounded-lg border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+        <option :value="null">Select project...</option>
+        <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
+    </select>
+</div>
+
+<!-- Task selector (muncul kalau tipe task) -->
+<div v-if="form.type === 'task'" class="space-y-1">
+    <label class="text-xs text-muted-foreground">Task *</label>
+    <select
+        v-model="form.task_id"
+        class="w-full rounded-lg border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+        <option :value="null">Select task...</option>
+        <option v-for="t in availableTasks" :key="t.id" :value="t.id">{{ t.title }}</option>
+    </select>
+</div>
             </div>
 
             <div class="space-y-1">

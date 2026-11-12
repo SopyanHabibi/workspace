@@ -10,10 +10,13 @@ class NoteListController extends Controller
     public function index(Request $request)
     {
         $typeFilter = $request->string('type')->toString() ?: null;
+        $workspace = $request->user()->defaultWorkspace();
 
-        $notes = $request->user()
-            ->defaultWorkspace()
-            ->projects()
+        $projects = $workspace->projects()
+            ->with('tasks:id,title,project_id')
+            ->get(['id', 'name']);
+
+        $notes = $workspace->projects()
             ->with(['notes' => function ($q) use ($typeFilter) {
                 if ($typeFilter) {
                     $q->where('type', $typeFilter);
@@ -33,12 +36,15 @@ class NoteListController extends Controller
                 'updated_at' => $note->updated_at,
             ]))
             ->flatten(1)
-            ->sort(fn ($a, $b) => $b['is_pinned'] <=> $a['is_pinned'] ?: $b['updated_at'] <=> $a['updated_at'])
+            ->sort(fn ($a, $b) =>
+                $b['is_pinned'] <=> $a['is_pinned'] ?: $b['updated_at'] <=> $a['updated_at']
+            )
             ->values();
 
         return Inertia::render('notes/Index', [
             'notes' => $notes,
             'typeFilter' => $typeFilter,
+            'projects' => $projects,
         ]);
     }
 
@@ -52,18 +58,18 @@ class NoteListController extends Controller
             'task_id' => ['nullable', 'exists:tasks,id'],
         ]);
 
-        // Personal notes tidak perlu project
-        if ($data['type'] === 'personal') {
-            $data['project_id'] = $request->user()
-                ->defaultWorkspace()
-                ->projects()
-                ->firstOrCreate(['name' => 'Personal'])
-                ->id;
+        $workspace = $request->user()->defaultWorkspace();
+
+        // Semua tipe butuh project — personal pakai project "Personal" otomatis
+        if ($data['type'] === 'personal' || empty($data['project_id'])) {
+            $data['project_id'] = $workspace->projects()
+                ->firstOrCreate(
+                    ['name' => 'Personal'],
+                    ['description' => 'Personal notes']
+                )->id;
         }
 
-        $request->user()
-            ->defaultWorkspace()
-            ->projects()
+        $workspace->projects()
             ->findOrFail($data['project_id'])
             ->notes()
             ->create($data);
