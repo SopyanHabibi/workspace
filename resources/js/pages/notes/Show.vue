@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Pin, PinOff, Trash2 } from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
-import { ref } from 'vue';
+import { Head, Link, router, useForm } from "@inertiajs/vue3";
+import { ArrowLeft, Pin, PinOff, Trash2 } from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import { ref } from "vue";
 
 interface NoteDetail {
     id: number;
     title: string;
     content: string | null;
-    type: 'personal' | 'project' | 'task';
+    type: "personal" | "project" | "task";
     is_pinned: boolean;
     project: { id: number; name: string };
     task: { id: number; title: string } | null;
@@ -17,54 +17,76 @@ interface NoteDetail {
 
 const props = defineProps<{ note: NoteDetail }>();
 
+const showDeleteModal = ref(false);
+const deleting = ref(false);
+
 const form = useForm({
     title: props.note.title,
-    content: props.note.content ?? '',
+    content: props.note.content ?? "",
     type: props.note.type,
 });
 
 const typeStyle: Record<string, string> = {
-    personal: 'bg-purple-500/15 text-purple-400',
-    project: 'bg-primary/15 text-primary',
-    task: 'bg-orange-500/15 text-orange-400',
+    personal: "bg-purple-500/15 text-purple-400",
+    project: "bg-primary/15 text-primary",
+    task: "bg-orange-500/15 text-orange-400",
 };
 
 const typeLabel: Record<string, string> = {
-    personal: 'Personal',
-    project: 'Project',
-    task: 'Task',
+    personal: "Personal",
+    project: "Project",
+    task: "Task",
 };
 
 function save() {
     form.patch(`/notes/${props.note.id}`, {
         preserveScroll: true,
         onSuccess: () => {
-            toast.success('Note saved successfully.');
+            toast.success("Note saved successfully.");
         },
     });
 }
 
 function togglePin() {
+    const wasPinned = props.note.is_pinned;
+
     router.patch(
         `/notes/${props.note.id}/pin`,
         {},
         {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(props.note.is_pinned ? 'Note unpinned.' : 'Note pinned.');
+                toast.success(wasPinned ? "Note unpinned." : "Note pinned.");
             },
         },
     );
 }
 
 function destroy() {
-    if (confirm(`Delete note "${props.note.title}"?`)) {
-        router.delete(`/notes/${props.note.id}`, {
-            onSuccess: () => router.visit('/notes'),
-        });
-    }
+    showDeleteModal.value = true;
 }
 
+function cancelDelete() {
+    if (deleting.value) return;
+
+    showDeleteModal.value = false;
+}
+
+function confirmDelete() {
+    if (deleting.value) return;
+
+    deleting.value = true;
+
+    router.delete(`/notes/${props.note.id}`, {
+        onSuccess: () => {
+            showDeleteModal.value = false;
+            toast.success("Note deleted successfully.");
+        },
+        onFinish: () => {
+            deleting.value = false;
+        },
+    });
+}
 </script>
 
 <template>
@@ -85,13 +107,15 @@ function destroy() {
                 <button
                     @click="togglePin"
                     class="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors"
-                    :class="note.is_pinned
-                        ? 'border-primary/50 bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:text-foreground'"
+                    :class="
+                        note.is_pinned
+                            ? 'border-primary/50 bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:text-foreground'
+                    "
                 >
                     <Pin v-if="!note.is_pinned" class="h-3.5 w-3.5" />
                     <PinOff v-else class="h-3.5 w-3.5" />
-                    {{ note.is_pinned ? 'Unpin' : 'Pin' }}
+                    {{ note.is_pinned ? "Unpin" : "Pin" }}
                 </button>
 
                 <button
@@ -141,15 +165,70 @@ function destroy() {
         <!-- Save button + status -->
         <div class="flex items-center justify-between">
             <p class="text-xs text-muted-foreground">
-                Last updated {{ new Date(note.updated_at).toLocaleString('id-ID') }}
+                Last updated
+                {{ new Date(note.updated_at).toLocaleString("id-ID") }}
             </p>
             <button
                 @click="save"
                 :disabled="form.processing || !form.isDirty"
                 class="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-                {{ form.processing ? 'Saving...' : 'Save Changes' }}
+                {{ form.processing ? "Saving..." : "Save Changes" }}
             </button>
+        </div>
+        <!-- Delete Confirmation Modal -->
+        <div
+            v-if="showDeleteModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+            @click.self="cancelDelete"
+        >
+            <div
+                class="w-full max-w-md space-y-5 rounded-2xl border border-border bg-card p-6 shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="delete-modal-title"
+            >
+                <!-- Icon -->
+                <div
+                    class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500"
+                >
+                    <Trash2 class="h-6 w-6" />
+                </div>
+
+                <!-- Message -->
+                <div class="space-y-2">
+                    <h2 id="delete-modal-title" class="text-lg font-semibold">
+                        Delete Note?
+                    </h2>
+
+                    <p class="text-sm leading-relaxed text-muted-foreground">
+                        Are you sure you want to delete
+                        <span class="font-semibold text-foreground">
+                            "{{ note.title }}" </span
+                        >? This action cannot be undone.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end gap-3 pt-2">
+                    <button
+                        @click="cancelDelete"
+                        :disabled="deleting"
+                        class="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        @click="confirmDelete"
+                        :disabled="deleting"
+                        class="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <Trash2 class="h-4 w-4" />
+                        {{ deleting ? "Deleting..." : "Delete Note" }}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>

@@ -39,6 +39,8 @@ const props = defineProps<{
 }>();
 const search = ref("");
 const showForm = ref(false);
+const noteToDelete = ref<NoteItem | null>(null);
+const deletingNoteId = ref<number | null>(null);
 
 const form = useForm({
     title: "",
@@ -124,14 +126,30 @@ function togglePin(note: NoteItem) {
 }
 
 function deleteNote(note: NoteItem) {
-    if (!confirm(`Delete note "${note.title}"?`)) {
-        return;
-    }
+    noteToDelete.value = note;
+}
+
+function cancelDelete() {
+    if (deletingNoteId.value !== null) return;
+
+    noteToDelete.value = null;
+}
+
+function confirmDelete() {
+    const note = noteToDelete.value;
+
+    if (!note || deletingNoteId.value !== null) return;
+
+    deletingNoteId.value = note.id;
 
     router.delete(`/notes/${note.id}`, {
         preserveScroll: true,
         onSuccess: () => {
             toast.success("Note deleted successfully.");
+            noteToDelete.value = null;
+        },
+        onFinish: () => {
+            deletingNoteId.value = null;
         },
     });
 }
@@ -381,6 +399,65 @@ function deleteNote(note: NoteItem) {
                     >
                         {{ formatUpdated(n.updated_at) }}
                     </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div
+            v-if="noteToDelete"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+            @click.self="cancelDelete"
+        >
+            <div
+                class="w-full max-w-md space-y-5 rounded-2xl border border-border bg-card p-6 shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="delete-modal-title"
+            >
+                <!-- Icon -->
+                <div
+                    class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500"
+                >
+                    <Trash2 class="h-6 w-6" />
+                </div>
+
+                <!-- Message -->
+                <div class="space-y-2">
+                    <h2 id="delete-modal-title" class="text-lg font-semibold">
+                        Delete Note?
+                    </h2>
+
+                    <p class="text-sm leading-relaxed text-muted-foreground">
+                        Are you sure you want to delete
+                        <span class="font-semibold text-foreground">
+                            "{{ noteToDelete.title }}" </span
+                        >? This action cannot be undone.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end gap-3 pt-2">
+                    <button
+                        @click="cancelDelete"
+                        :disabled="deletingNoteId !== null"
+                        class="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        @click="confirmDelete"
+                        :disabled="deletingNoteId !== null"
+                        class="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <Trash2 class="h-4 w-4" />
+                        {{
+                            deletingNoteId !== null
+                                ? "Deleting..."
+                                : "Delete Note"
+                        }}
+                    </button>
                 </div>
             </div>
         </div>
