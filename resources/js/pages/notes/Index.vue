@@ -13,6 +13,7 @@ import {
 } from "lucide-vue-next";
 import { Link } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
+import { toast } from "vue-sonner";
 
 interface NoteItem {
     id: number;
@@ -103,6 +104,34 @@ function submit() {
         onSuccess: () => {
             form.reset();
             showForm.value = false;
+        },
+    });
+}
+
+function togglePin(note: NoteItem) {
+    const wasPinned = note.is_pinned;
+
+    router.patch(
+        `/notes/${note.id}/pin`,
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(wasPinned ? "Note unpinned." : "Note pinned.");
+            },
+        },
+    );
+}
+
+function deleteNote(note: NoteItem) {
+    if (!confirm(`Delete note "${note.title}"?`)) {
+        return;
+    }
+
+    router.delete(`/notes/${note.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success("Note deleted successfully.");
         },
     });
 }
@@ -263,7 +292,7 @@ function submit() {
 
         <!-- Grid -->
         <div class="grid gap-4 sm:grid-cols-2">
-            <Link
+            <div
                 v-for="n in filtered"
                 :key="n.id"
                 :href="`/notes/${n.id}`"
@@ -282,7 +311,12 @@ function submit() {
 
                 <!-- Title & content -->
                 <div>
-                    <h3 class="font-semibold">{{ n.title }}</h3>
+                    <Link
+                        :href="`/notes/${n.id}`"
+                        class="font-semibold hover:text-primary transition-colors"
+                    >
+                        <h3>{{ n.title }}</h3>
+                    </Link>
                     <p
                         v-if="n.content"
                         class="mt-1 line-clamp-2 text-sm text-muted-foreground"
@@ -326,13 +360,7 @@ function submit() {
                             <Pencil class="h-3.5 w-3.5" />
                         </Link>
                         <button
-                            @click="
-                                router.patch(
-                                    `/notes/${n.id}/pin`,
-                                    {},
-                                    { preserveScroll: true },
-                                )
-                            "
+                            @click="togglePin(n)"
                             class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
                             :title="n.is_pinned ? 'Unpin' : 'Pin'"
                         >
@@ -340,11 +368,7 @@ function submit() {
                             <Pin v-else class="h-3.5 w-3.5" />
                         </button>
                         <button
-                            @click="
-                                router.delete(`/notes/${n.id}`, {
-                                    preserveScroll: true,
-                                })
-                            "
+                            @click="deleteNote(n)"
                             class="rounded-md p-1.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-400"
                             title="Delete"
                         >
@@ -358,7 +382,7 @@ function submit() {
                         {{ formatUpdated(n.updated_at) }}
                     </span>
                 </div>
-            </Link>
+            </div>
         </div>
     </div>
 </template>

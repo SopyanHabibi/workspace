@@ -65,11 +65,11 @@ class NoteController extends Controller
     }
 
     public function destroy(Note $note)
-    {
-        Gate::authorize('delete', $note);
+{
+    Gate::authorize('delete', $note);
 
-        $note->delete();
+    $note->delete();
 
-        return back();
-    }
+    return redirect()->route('notes.index');
+}
 }

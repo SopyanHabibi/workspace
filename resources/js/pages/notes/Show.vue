@@ -45,14 +45,26 @@ function save() {
 }
 
 function togglePin() {
-    router.patch(`/notes/${props.note.id}/pin`, {}, { preserveScroll: true });
+    router.patch(
+        `/notes/${props.note.id}/pin`,
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(props.note.is_pinned ? 'Note unpinned.' : 'Note pinned.');
+            },
+        },
+    );
 }
 
 function destroy() {
     if (confirm(`Delete note "${props.note.title}"?`)) {
-        router.delete(`/notes/${props.note.id}`);
+        router.delete(`/notes/${props.note.id}`, {
+            onSuccess: () => router.visit('/notes'),
+        });
     }
 }
+
 </script>
 
 <template>
