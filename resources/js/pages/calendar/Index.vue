@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Plus, X, Trash2} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface CalendarEntry {
     id: number;
@@ -27,6 +28,8 @@ const props = defineProps<{
 
 const showForm = ref(false);
 const selectedEntry = ref<CalendarEntry | null>(null);
+    const eventToDelete = ref<CalendarEntry | null>(null);
+const deleting = ref(false);
 
 const form = useForm({
     title: '',
@@ -102,11 +105,35 @@ function submit() {
 }
 
 function destroy(entry: CalendarEntry) {
-    if (entry.type === 'deadline') return; // deadline = task, tidak bisa dihapus dari sini
-    if (confirm(`Delete event "${entry.title}"?`)) {
-        router.delete(`/calendar/${entry.id}`, { preserveScroll: true });
-        selectedEntry.value = null;
-    }
+    if (entry.type === 'deadline') return;
+
+    eventToDelete.value = entry;
+}
+
+function cancelDelete() {
+    if (deleting.value) return;
+
+    eventToDelete.value = null;
+}
+
+function confirmDelete() {
+    const event = eventToDelete.value;
+
+    if (!event || deleting.value) return;
+
+    deleting.value = true;
+
+    router.delete(`/calendar/${event.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success('Event deleted successfully.');
+            eventToDelete.value = null;
+            selectedEntry.value = null;
+        },
+        onFinish: () => {
+            deleting.value = false;
+        },
+    });
 }
 
 function formatTime(value: string): string {
@@ -341,4 +368,64 @@ function formatTime(value: string): string {
             </div>
         </div>
     </Teleport>
+    <!-- Delete Event Confirmation Modal -->
+<Teleport to="body">
+    <div
+        v-if="eventToDelete"
+        class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        @click.self="cancelDelete"
+    >
+        <div
+            class="w-full max-w-md space-y-5 rounded-2xl border border-border bg-card p-6 shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-event-title"
+        >
+            <!-- Icon -->
+            <div
+                class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500"
+            >
+                <Trash2 class="h-6 w-6" />
+            </div>
+
+            <!-- Message -->
+            <div class="space-y-2">
+                <h2
+                    id="delete-event-title"
+                    class="text-lg font-semibold"
+                >
+                    Delete Event?
+                </h2>
+
+                <p class="text-sm leading-relaxed text-muted-foreground">
+                    Are you sure you want to delete
+                    <span class="font-semibold text-foreground">
+                        "{{ eventToDelete.title }}"
+                    </span>?
+                    This action cannot be undone.
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-2">
+                <button
+                    @click="cancelDelete"
+                    :disabled="deleting"
+                    class="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    @click="confirmDelete"
+                    :disabled="deleting"
+                    class="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <Trash2 class="h-4 w-4" />
+                    {{ deleting ? 'Deleting...' : 'Delete Event' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</Teleport>
 </template>
