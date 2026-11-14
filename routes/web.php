@@ -6,6 +6,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskListController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteListController;
+use App\Http\Controllers\CalendarController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,6 +28,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('notes', [NoteListController::class, 'store'])->name('notes.store');
     Route::get('notes/{note}', [NoteController::class, 'show'])->name('notes.show');
     Route::patch('notes/{note}/pin', [NoteController::class, 'pin'])->name('notes.pin');
-});
+    Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::post('calendar', [CalendarController::class, 'store'])->name('calendar.store');
+    Route::delete('calendar/{event}', [CalendarController::class, 'destroy'])->name('calendar.destroy');
+
+    });
 
 require __DIR__.'/settings.php';
