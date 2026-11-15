@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from "@inertiajs/vue3";
 import {
     Download,
     File,
@@ -11,8 +11,8 @@ import {
     Trash2,
     Upload,
     X,
-} from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+} from "lucide-vue-next";
+import { computed, ref } from "vue";
 
 interface DocumentItem {
     id: number;
@@ -41,22 +41,22 @@ const props = defineProps<{
 }>();
 
 const showForm = ref(false);
-const searchInput = ref(props.search ?? '');
+const searchInput = ref(props.search ?? "");
 
 const form = useForm({
     file: null as File | null,
     project_id: null as number | null,
     task_id: null as number | null,
-    category: 'other',
+    category: "other",
 });
 
 const categories = [
-    { label: 'All', value: null },
-    { label: 'Report', value: 'report' },
-    { label: 'Presentation', value: 'presentation' },
-    { label: 'Image', value: 'image' },
-    { label: 'Spreadsheet', value: 'spreadsheet' },
-    { label: 'Other', value: 'other' },
+    { label: "All", value: null },
+    { label: "Report", value: "report" },
+    { label: "Presentation", value: "presentation" },
+    { label: "Image", value: "image" },
+    { label: "Spreadsheet", value: "spreadsheet" },
+    { label: "Other", value: "other" },
 ];
 
 const categoryIcon: Record<string, any> = {
@@ -68,29 +68,49 @@ const categoryIcon: Record<string, any> = {
 };
 
 const categoryStyle: Record<string, string> = {
-    report: 'bg-blue-500/15 text-blue-400',
-    presentation: 'bg-orange-500/15 text-orange-400',
-    image: 'bg-green-500/15 text-green-400',
-    spreadsheet: 'bg-emerald-500/15 text-emerald-400',
-    other: 'bg-muted text-muted-foreground',
+    report: "bg-blue-500/15 text-blue-400",
+    presentation: "bg-orange-500/15 text-orange-400",
+    image: "bg-green-500/15 text-green-400",
+    spreadsheet: "bg-emerald-500/15 text-emerald-400",
+    other: "bg-muted text-muted-foreground",
 };
+
+const fileInput = ref<HTMLInputElement | null>(null);
+const isDragging = ref(false);
+
+function triggerFileInput() {
+    fileInput.value?.click();
+}
+
+function handleDrop(e: DragEvent) {
+    isDragging.value = false;
+    const file = e.dataTransfer?.files?.[0];
+    if (file) applyFile(file);
+}
 
 function handleFileChange(e: Event) {
     const target = e.target as HTMLInputElement;
-    if (target.files?.[0]) {
-        form.file = target.files[0];
-        // Auto-detect category dari ekstensi
-        const ext = target.files[0].name.split('.').pop()?.toLowerCase();
-        if (['pdf', 'doc', 'docx'].includes(ext ?? '')) form.category = 'report';
-        else if (['ppt', 'pptx'].includes(ext ?? '')) form.category = 'presentation';
-        else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext ?? '')) form.category = 'image';
-        else if (['xls', 'xlsx', 'csv'].includes(ext ?? '')) form.category = 'spreadsheet';
-        else form.category = 'other';
+    if (target.files?.[0]) applyFile(target.files[0]);
+}
+
+function applyFile(file: File) {
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (file.size > maxSize) {
+        alert(`File "${file.name}" terlalu besar. Maksimum 20MB.`);
+        return;
     }
+
+    form.file = file;
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (['pdf', 'doc', 'docx'].includes(ext ?? '')) form.category = 'report';
+    else if (['ppt', 'pptx'].includes(ext ?? '')) form.category = 'presentation';
+    else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext ?? '')) form.category = 'image';
+    else if (['xls', 'xlsx', 'csv'].includes(ext ?? '')) form.category = 'spreadsheet';
+    else form.category = 'other';
 }
 
 function submit() {
-    form.post('/documents', {
+    form.post("/documents", {
         forceFormData: true,
         onSuccess: () => {
             form.reset();
@@ -100,17 +120,25 @@ function submit() {
 }
 
 function filterCategory(value: string | null) {
-    router.get('/documents', {
-        ...(searchInput.value ? { search: searchInput.value } : {}),
-        ...(value ? { category: value } : {}),
-    }, { preserveState: true });
+    router.get(
+        "/documents",
+        {
+            ...(searchInput.value ? { search: searchInput.value } : {}),
+            ...(value ? { category: value } : {}),
+        },
+        { preserveState: true },
+    );
 }
 
 function doSearch() {
-    router.get('/documents', {
-        ...(searchInput.value ? { search: searchInput.value } : {}),
-        ...(props.category ? { category: props.category } : {}),
-    }, { preserveState: true });
+    router.get(
+        "/documents",
+        {
+            ...(searchInput.value ? { search: searchInput.value } : {}),
+            ...(props.category ? { category: props.category } : {}),
+        },
+        { preserveState: true },
+    );
 }
 
 function destroy(doc: DocumentItem) {
@@ -120,8 +148,10 @@ function destroy(doc: DocumentItem) {
 }
 
 function formatDate(value: string): string {
-    return new Date(value).toLocaleDateString('id-ID', {
-        day: 'numeric', month: 'short', year: 'numeric',
+    return new Date(value).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
     });
 }
 </script>
@@ -134,7 +164,9 @@ function formatDate(value: string): string {
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold">Documents</h1>
-                <p class="text-sm text-muted-foreground">Manage and organize your project files.</p>
+                <p class="text-sm text-muted-foreground">
+                    Manage and organize your project files.
+                </p>
             </div>
             <button
                 @click="showForm = !showForm"
@@ -149,36 +181,65 @@ function formatDate(value: string): string {
         <div v-if="showForm" class="rounded-xl border bg-card p-5 space-y-4">
             <div class="flex items-center justify-between">
                 <h2 class="font-semibold">Upload Document</h2>
-                <button @click="showForm = false" class="text-muted-foreground hover:text-foreground">
+                <button
+                    @click="showForm = false"
+                    class="text-muted-foreground hover:text-foreground"
+                >
                     <X class="h-4 w-4" />
                 </button>
             </div>
 
             <!-- File drop zone -->
-            <label class="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-8 hover:border-primary/50 hover:bg-accent/50 transition-colors">
+            <div
+                class="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-8 hover:border-primary/50 hover:bg-accent/50 transition-colors"
+                :class="{ 'border-primary bg-accent/50': isDragging }"
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="handleDrop"
+                @click="triggerFileInput"
+            >
                 <Upload class="mb-2 h-8 w-8 text-muted-foreground" />
                 <p class="text-sm font-medium">
-                    {{ form.file ? form.file.name : 'Click to upload or drag & drop' }}
+                    {{
+                        form.file
+                            ? form.file.name
+                            : "Click to upload or drag & drop"
+                    }}
                 </p>
-                <p class="text-xs text-muted-foreground mt-1">PDF, DOCX, PPTX, XLSX, images — max 20MB</p>
-                <input type="file" class="hidden" @change="handleFileChange" />
-            </label>
-            <p v-if="form.errors.file" class="text-xs text-red-500">{{ form.errors.file }}</p>
+                <p class="text-xs text-muted-foreground mt-1">
+                    PDF, DOCX, PPTX, XLSX, images — max 20MB
+                </p>
+                <input
+                    ref="fileInput"
+                    type="file"
+                    class="hidden"
+                    @change="handleFileChange"
+                />
+            </div>
+            <p v-if="form.errors.file" class="text-xs text-red-500">
+                {{ form.errors.file }}
+            </p>
 
             <div class="grid gap-3 sm:grid-cols-3">
                 <div class="space-y-1">
-                    <label class="text-xs text-muted-foreground">Project *</label>
+                    <label class="text-xs text-muted-foreground"
+                        >Project *</label
+                    >
                     <select
                         v-model="form.project_id"
                         class="w-full rounded-lg border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option :value="null">Select project...</option>
-                        <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
+                        <option v-for="p in projects" :key="p.id" :value="p.id">
+                            {{ p.name }}
+                        </option>
                     </select>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-xs text-muted-foreground">Category</label>
+                    <label class="text-xs text-muted-foreground"
+                        >Category</label
+                    >
                     <select
                         v-model="form.category"
                         class="w-full rounded-lg border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -204,7 +265,7 @@ function formatDate(value: string): string {
                     :disabled="form.processing || !form.file"
                     class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
-                    {{ form.processing ? 'Uploading...' : 'Upload' }}
+                    {{ form.processing ? "Uploading..." : "Upload" }}
                 </button>
             </div>
         </div>
@@ -224,7 +285,9 @@ function formatDate(value: string): string {
         <!-- Search -->
         <div class="flex items-center gap-2">
             <div class="relative flex-1">
-                <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search
+                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                />
                 <input
                     v-model="searchInput"
                     placeholder="Search documents..."
@@ -247,9 +310,11 @@ function formatDate(value: string): string {
                 :key="cat.label"
                 @click="filterCategory(cat.value)"
                 class="rounded-full border px-4 py-1.5 text-sm transition-colors"
-                :class="category === cat.value
-                    ? 'bg-primary text-primary-foreground border-primary font-medium'
-                    : 'text-muted-foreground hover:text-foreground'"
+                :class="
+                    category === cat.value
+                        ? 'bg-primary text-primary-foreground border-primary font-medium'
+                        : 'text-muted-foreground hover:text-foreground'
+                "
             >
                 {{ cat.label }}
             </button>
@@ -272,17 +337,24 @@ function formatDate(value: string): string {
                     class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                     :class="categoryStyle[doc.category]"
                 >
-                    <component :is="categoryIcon[doc.category]" class="h-5 w-5" />
+                    <component
+                        :is="categoryIcon[doc.category]"
+                        class="h-5 w-5"
+                    />
                 </div>
 
                 <!-- Info -->
                 <div class="min-w-0 flex-1">
-                    <p class="truncate font-medium text-sm">{{ doc.original_name }}</p>
+                    <p class="truncate font-medium text-sm">
+                        {{ doc.original_name }}
+                    </p>
                     <p class="text-xs text-muted-foreground">
                         {{ doc.project_name }}
-                        <span v-if="doc.task_title"> · {{ doc.task_title }}</span>
-                        · {{ doc.size_formatted }}
-                        · {{ formatDate(doc.created_at) }}
+                        <span v-if="doc.task_title">
+                            · {{ doc.task_title }}</span
+                        >
+                        · {{ doc.size_formatted }} ·
+                        {{ formatDate(doc.created_at) }}
                     </p>
                 </div>
 

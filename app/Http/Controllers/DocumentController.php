@@ -68,13 +68,19 @@ class DocumentController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'file'       => ['required', 'file', 'max:20480'], // 20MB
-            'project_id' => ['required', 'exists:projects,id'],
-            'task_id'    => ['nullable', 'exists:tasks,id'],
-            'category'   => ['required', 'in:report,presentation,image,spreadsheet,other'],
-        ]);
+{
+    // Tangkap file yang terlalu besar sebelum validasi Laravel
+    if ($request->hasFile('file') === false && $request->isMethod('post')) {
+        return back()->withErrors(['file' => 'File terlalu besar. Maksimum 20MB.']);
+    }
+
+    $request->validate([
+        'file'       => ['required', 'file', 'max:20480'],
+        'project_id' => ['required', 'exists:projects,id'],
+        'task_id'    => ['nullable', 'exists:tasks,id'],
+        'category'   => ['required', 'in:report,presentation,image,spreadsheet,other'],
+    ]);
+
 
         $project = Project::findOrFail($request->project_id);
         Gate::authorize('update', $project);
