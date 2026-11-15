@@ -10,15 +10,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/vue3';
-import {
-    CalendarDays,
-    FolderKanban,
-    LayoutDashboard,
-    ListTodo,
-    NotebookPen,
-    Settings,
-    Boxes,
-} from 'lucide-vue-next';
+import { CalendarDays, FileStack, FolderKanban, LayoutDashboard, ListTodo, NotebookPen, Settings, Boxes } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const page = usePage();
@@ -36,6 +28,7 @@ const menuItems = [
     { title: 'All Tasks', href: '/tasks', icon: ListTodo },
     { title: 'Notes', href: '/notes', icon: NotebookPen },
     { title: 'Calendar', href: '/calendar', icon: CalendarDays },
+    { title: 'Documents', href: '/documents', icon: FileStack },
 ];
 </script>
 
