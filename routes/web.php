@@ -41,6 +41,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    
+    Route::get('documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
+Route::get('documents/{document}/preview-file', [DocumentController::class, 'previewFile'])->name('documents.preview-file');
 
     });
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, router, useForm } from "@inertiajs/vue3";
+import { Head, Link, router, useForm } from "@inertiajs/vue3";
 import {
     Download,
+    Eye,
     File,
     FileImage,
     FileSpreadsheet,
@@ -101,12 +102,15 @@ function applyFile(file: File) {
     }
 
     form.file = file;
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (['pdf', 'doc', 'docx'].includes(ext ?? '')) form.category = 'report';
-    else if (['ppt', 'pptx'].includes(ext ?? '')) form.category = 'presentation';
-    else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext ?? '')) form.category = 'image';
-    else if (['xls', 'xlsx', 'csv'].includes(ext ?? '')) form.category = 'spreadsheet';
-    else form.category = 'other';
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (["pdf", "doc", "docx"].includes(ext ?? "")) form.category = "report";
+    else if (["ppt", "pptx"].includes(ext ?? ""))
+        form.category = "presentation";
+    else if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext ?? ""))
+        form.category = "image";
+    else if (["xls", "xlsx", "csv"].includes(ext ?? ""))
+        form.category = "spreadsheet";
+    else form.category = "other";
 }
 
 function submit() {
@@ -366,8 +370,15 @@ function formatDate(value: string): string {
                     {{ doc.category }}
                 </span>
 
-                <!-- Actions -->
                 <div class="flex shrink-0 items-center gap-1">
+                    <!-- Preview — hanya untuk file yang bisa di-preview -->
+                    <Link
+                        :href="`/documents/${doc.id}/preview`"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-accent transition-colors"
+                        title="Preview"
+                    >
+                        <Eye class="h-4 w-4" />
+                    </Link>
                     <a
                         :href="doc.download_url"
                         class="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-accent transition-colors"

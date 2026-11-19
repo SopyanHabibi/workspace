@@ -128,4 +128,57 @@ class DocumentController extends Controller
         if ($bytes < 1048576) return round($bytes / 1024, 1) . ' KB';
         return round($bytes / 1048576, 1) . ' MB';
     }
+
+    public function preview(Document $document)
+{
+    Gate::authorize('view', $document);
+
+    $document->load('project:id,name', 'task:id,title');
+
+    return Inertia::render('documents/Preview', [
+        'document' => [
+            'id'             => $document->id,
+            'original_name'  => $document->original_name,
+            'category'       => $document->category,
+            'size_formatted' => $document->size_formatted,
+            'mime_type'      => $document->mime_type,
+            'download_url'   => $document->download_url,
+            'project_name'   => $document->project->name,
+            'task_title'     => $document->task?->title,
+            'created_at'     => $document->created_at,
+            'preview_url'    => route('documents.preview-file', $document->id),
+            'previewable'    => $this->isPreviewable($document->mime_type),
+            'preview_type'   => $this->previewType($document->mime_type),
+        ],
+    ]);
+}
+
+public function previewFile(Document $document)
+{
+    Gate::authorize('view', $document);
+
+    return Storage::disk('local')->response(
+        $document->path,
+        $document->original_name,
+        ['Content-Disposition' => 'inline'],
+    );
+}
+
+private function isPreviewable(string $mimeType): bool
+{
+    return in_array($mimeType, [
+        'application/pdf',
+        'image/jpeg', 'image/png', 'image/gif',
+        'image/webp', 'image/svg+xml',
+        'text/plain', 'text/markdown',
+    ]);
+}
+
+private function previewType(string $mimeType): string
+{
+    if ($mimeType === 'application/pdf') return 'pdf';
+    if (str_starts_with($mimeType, 'image/')) return 'image';
+    if (in_array($mimeType, ['text/plain', 'text/markdown'])) return 'text';
+    return 'unsupported';
+}
 }
