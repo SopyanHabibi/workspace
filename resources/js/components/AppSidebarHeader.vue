@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import GlobalSearch from '@/components/GlobalSearch.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Bell, CheckCircle2, Clock } from 'lucide-vue-next';
@@ -48,6 +49,11 @@ function labelStyle(n: NotifItem): string {
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
+        </div>
+
+        <!-- Tengah: Global Search -->
+        <div class="flex-1 flex justify-center px-4">
+            <GlobalSearch />
         </div>
 
         <!-- Bell notification -->
