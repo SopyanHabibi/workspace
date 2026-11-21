@@ -15,12 +15,26 @@ trait ProfileValidationRules
      * @return array<string, array<int, Unique|ValidationRule|array<mixed>|string>>
      */
     protected function profileRules(?int $userId = null): array
-    {
-        return [
-            'name' => $this->nameRules(),
-            'email' => $this->emailRules($userId),
-        ];
-    }
+{
+    return [
+        'name' => $this->nameRules(),
+        'email' => $this->emailRules($userId),
+        'username' => $this->usernameRules($userId),
+    ];
+}
+
+protected function usernameRules(?int $userId = null): array
+{
+    return [
+        'nullable',
+        'string',
+        'max:30',
+        'alpha_dash', // hanya huruf, angka, dash, underscore
+        $userId === null
+            ? Rule::unique(User::class)
+            : Rule::unique(User::class)->ignore($userId),
+    ];
+}
 
     /**
      * Get the validation rules used to validate user names.
