@@ -48,8 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function getAvatarUrlAttribute(): string
 {
     if ($this->avatar) {
-        $filename = basename($this->avatar);
-        return route('avatar.serve', $filename);
+        return asset($this->avatar);
     }
 
     return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=7c3aed&color=fff&size=128';

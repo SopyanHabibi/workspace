@@ -19,9 +19,16 @@ Route::get('/', function () {
 
 Route::get('avatars/{filename}', function ($filename) {
     $path = storage_path('app/private/avatars/' . $filename);
-    if (!file_exists($path)) abort(404);
-    return response()->file($path);
-})->name('avatar.serve')->middleware('auth');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    return response()->file($path, [
+        'Content-Type' => mime_content_type($path),
+        'Cache-Control' => 'public, max-age=86400',
+        'X-Inertia' => '',
+    ]);
+})->name('avatar.serve');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

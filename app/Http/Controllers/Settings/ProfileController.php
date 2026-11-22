@@ -39,31 +39,29 @@ class ProfileController extends Controller
     }
 
     public function updateAvatar(Request $request): RedirectResponse
-    {
-        \Log::info('Avatar upload attempt', [
-        'has_file' => $request->hasFile('avatar'),
-        'files' => $request->allFiles(),
-        'all' => $request->all(),
+{
+    $request->validate([
+        'avatar' => ['required', 'image', 'max:2048'],
     ]);
 
-        $request->validate([
-            'avatar' => ['required', 'image', 'max:2048'], // max 2MB
-        ]);
+    $user = $request->user();
 
-        $user = $request->user();
-
-        // Hapus avatar lama
-        if ($user->avatar) {
-            Storage::disk('local')->delete($user->avatar);
-        }
-
-        $path = $request->file('avatar')->store('avatars', 'local');
-        $user->update(['avatar' => $path]);
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Avatar updated.']);
-
-        return to_route('profile.edit');
+    // Hapus avatar lama dari public
+    if ($user->avatar && file_exists(public_path($user->avatar))) {
+        unlink(public_path($user->avatar));
     }
+
+    // Simpan ke public/avatars/
+    $file = $request->file('avatar');
+    $filename = $file->hashName();
+    $file->move(public_path('avatars'), $filename);
+
+    $user->update(['avatar' => 'avatars/' . $filename]);
+
+    Inertia::flash('toast', ['type' => 'success', 'message' => 'Avatar updated.']);
+
+    return to_route('profile.edit');
+}
 
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
