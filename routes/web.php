@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\ProjectController;
@@ -15,6 +16,12 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
+
+Route::get('avatars/{filename}', function ($filename) {
+    $path = storage_path('app/private/avatars/' . $filename);
+    if (!file_exists($path)) abort(404);
+    return response()->file($path);
+})->name('avatar.serve')->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -42,11 +49,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-    
+
     Route::get('documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
     Route::get('documents/{document}/preview-file', [DocumentController::class, 'previewFile'])->name('documents.preview-file');
 
     Route::get('search', SearchController::class)->name('search');
-    });
+});
 
 require __DIR__.'/settings.php';

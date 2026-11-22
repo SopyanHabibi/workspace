@@ -4,21 +4,22 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use App\Models\Workspace;
 
 /**
  * @property int $id
  * @property string $name
+ * @property string|null $username
  * @property string $email
+ * @property string|null $avatar
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -28,29 +29,46 @@ use App\Models\Workspace;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
-    public function workspaces() { return $this->hasMany(Workspace::class); }
-    public function activityLogs() { return $this->hasMany(ActivityLog::class); }
+    protected $fillable = [
+        'name',
+        'username',
+        'email',
+        'password',
+        'avatar',
+    ];
+
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute(): string
+{
+    if ($this->avatar) {
+        $filename = basename($this->avatar);
+        return route('avatar.serve', $filename);
+    }
+
+    return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=7c3aed&color=fff&size=128';
+}
+    public function workspaces()
+    {
+        return $this->hasMany(Workspace::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
 
     public function defaultWorkspace(): Workspace
-{
-    return $this->workspaces()->firstOrCreate(['name' => 'My Workspace']);
-}
+    {
+        return $this->workspaces()->firstOrCreate(['name' => 'My Workspace']);
+    }
 
-
-
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
