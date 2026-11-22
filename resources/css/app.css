@@ -4,6 +4,8 @@
 @source inline("bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300");
 @source inline("bg-red-500/15 text-red-400 bg-orange-500/15 text-orange-400 bg-yellow-500/15 text-yellow-400 bg-green-500/15 text-green-400 bg-primary/15 text-primary");
 
+@source inline("bg-yellow-500/15 text-yellow-400 bg-purple-500/15 text-purple-400 bg-blue-500/15 text-blue-400");
+
 @import 'tw-animate-css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
