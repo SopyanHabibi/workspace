@@ -8,6 +8,7 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteListController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DocumentController;
+
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,7 +17,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('avatars/{filename}', function ($filename) {
-    $path = storage_path('app/avatars/' . $filename);
+    $path = storage_path('app/private/avatars/' . $filename);
     if (!file_exists($path)) abort(404);
     return response()->file($path);
 })->name('avatar.serve')->middleware('auth');

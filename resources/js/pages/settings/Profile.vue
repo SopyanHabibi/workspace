@@ -3,7 +3,6 @@ import { Head, usePage, useForm } from "@inertiajs/vue3";
 import { Link, router } from "@inertiajs/vue3";
 import { Camera } from "lucide-vue-next";
 import { computed, ref } from "vue";
-// import ProfileController from "@/actions/App/Http/Controllers/Settings/ProfileController";
 import DeleteUser from "@/components/DeleteUser.vue";
 import Heading from "@/components/Heading.vue";
 import InputError from "@/components/InputError.vue";
@@ -54,26 +53,29 @@ function triggerAvatarInput() {
 }
 
 function handleAvatarChange(e: Event) {
+    console.log('handleAvatarChange called');
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0];
+    console.log('File:', file?.name, file?.size);
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-        avatarError.value = "Avatar must be under 2MB.";
+        avatarError.value = 'Avatar must be under 2MB.';
+        console.log('File too large');
         return;
     }
 
-    avatarError.value = "";
-    avatarPreview.value = URL.createObjectURL(file);
-
+    console.log('Calling router.post');
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append('avatar', file);
 
-    router.post("/settings/profile/avatar", formData, {
+    router.post('/settings/profile/avatar', formData, {
         forceFormData: true,
         preserveScroll: true,
+        onSuccess: () => console.log('Upload success'),
         onError: (errors: Record<string, string>) => {
-            avatarError.value = errors.avatar ?? "Failed to upload avatar.";
+            console.log('Upload error:', errors);
+            avatarError.value = errors.avatar ?? 'Failed to upload avatar.';
         },
     });
 }

@@ -40,6 +40,12 @@ class ProfileController extends Controller
 
     public function updateAvatar(Request $request): RedirectResponse
     {
+        \Log::info('Avatar upload attempt', [
+        'has_file' => $request->hasFile('avatar'),
+        'files' => $request->allFiles(),
+        'all' => $request->all(),
+    ]);
+
         $request->validate([
             'avatar' => ['required', 'image', 'max:2048'], // max 2MB
         ]);

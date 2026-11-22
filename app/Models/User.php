@@ -51,9 +51,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         $filename = basename($this->avatar);
         return route('avatar.serve', $filename);
     }
+
     return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=7c3aed&color=fff&size=128';
 }
-
     public function workspaces()
     {
         return $this->hasMany(Workspace::class);
